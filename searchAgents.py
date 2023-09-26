@@ -33,7 +33,7 @@ description for details.
 
 Good luck and happy searching!
 """
-
+from itertools import combinations
 from typing import List, Tuple, Any
 from game import Directions
 from game import Agent
@@ -495,9 +495,71 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
-    position, foodGrid = state
+    # position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    # # Get the list of food coordinates
+    # foodList = foodGrid.asList()
+    #
+    # # If there's no food left, return 0
+    # if not foodList:
+    #     return 0
+    #
+    # # Compute the Manhattan distance to each food pellet
+    # distances = [abs(position[0] - food[0]) + abs(position[1] - food[1]) for food in foodList]
+    #
+    # # Return the maximum distance as the heuristic
+    # return max(distances)
+    position, foodGrid = state
+    foodList = foodGrid.asList()
+
+    if not foodList:  # No food left
+        return 0
+
+    # Create edges between all food pairs with their manhattan distance as weight
+    edges = []
+    for (food1, food2) in combinations(foodList, 2):
+        edges.append((food1, food2, util.manhattanDistance(food1, food2)))
+
+    # Sort edges by weight
+    edges.sort(key=lambda x: x[2])
+
+    # Helper function for union-find algorithm
+    def find(parent, i):
+        if parent[i] == i:
+            return i
+        return find(parent, parent[i])
+
+    # Helper function for union of two sets of a node
+    def union(parent, rank, x, y):
+        rootX = find(parent, x)
+        rootY = find(parent, y)
+        if rank[rootX] < rank[rootY]:
+            parent[rootX] = rootY
+        elif rank[rootX] > rank[rootY]:
+            parent[rootY] = rootX
+        else:
+            parent[rootY] = rootX
+            rank[rootX] += 1
+
+    # Kruskal's algorithm to compute MST
+    mst_weight = 0
+    parent = {}
+    rank = {}
+    for food in foodList:
+        parent[food] = food
+        rank[food] = 0
+    while edges:
+        food1, food2, weight = edges.pop(0)
+        root1 = find(parent, food1)
+        root2 = find(parent, food2)
+        if root1 != root2:
+            mst_weight += weight
+            union(parent, rank, root1, root2)
+
+    # Add distance from Pacman to the nearest food pellet
+    closest_food_dist = min(util.manhattanDistance(position, food) for food in foodList)
+    return mst_weight + closest_food_dist
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
