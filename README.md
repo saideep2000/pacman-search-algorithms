@@ -80,8 +80,77 @@ CTRL + C in terminal to exit the game.
 ##### For list of options:
 python3 pacman.py -h
 
-
 python3 pacman.py -l tinyMaze -p SearchAgent -a fn=tinyMazeSearch
+
+##### Commnads Useful for Questions:
+
+###### Q1 (DFS):
+python3 pacman.py -l tinyMaze -p SearchAgent
+python3 pacman.py -l mediumMaze -p SearchAgent
+python3 pacman.py -l bigMaze -z .5 -p SearchAgent
+
+python3 autograder.py -q q1
+
+printing states : print(list(stack.list))
+
+###### Q2 (BFS):
+
+python3 pacman.py -l mediumMaze -p SearchAgent -a fn=bfs
+
+python3 pacman.py -l bigMaze -p SearchAgent -a fn=bfs -z .5
+
+python3 autograder.py -q q2
+
+###### Q3 (UCS):
+
+python3 pacman.py -l mediumMaze -p SearchAgent -a fn=ucs
+
+python3 pacman.py -l mediumDottedMaze -p StayEastSearchAgent
+
+python3 pacman.py -l mediumScaryMaze -p StayWestSearchAgent
+
+
+python3 autograder.py -q q3
+
+###### Q4 (AStar):
+
+python3 pacman.py -l bigMaze -z .5 -p SearchAgent -a fn=astar,heuristic=manhattanHeuristic
+
+python3 autograder.py -q q4
+
+###### Q5 (Finding all the Corners):
+
+python3 pacman.py -l tinyCorners -p SearchAgent -a fn=bfs,prob=CornersProblem
+
+python3 pacman.py -l mediumCorners -p SearchAgent -a fn=bfs,prob=CornersProblem
+
+python3 autograder.py -q q5
+
+###### Q6 (Corners Problem Heuristic):
+
+python3 pacman.py -l mediumCorners -p AStarCornersAgent -z 0.5
+
+-p SearchAgent -a fn=aStarSearch,prob=CornersProblem,heuristic=cornersHeuristic
+
+python3 autograder.py -q q6
+
+###### Q7 (Eating all the dots):
+
+python pacman.py -l testSearch -p AStarFoodSearchAgent
+
+-p SearchAgent -a fn=astar,prob=FoodSearchProblem,heuristic=foodHeuristic
+
+python pacman.py -l trickySearch -p AStarFoodSearchAgent
+
+python autograder.py -q q7
+
+
+###### Q8 (Suboptimal Search):
+
+python pacman.py -l bigSearch -p ClosestDotSearchAgent -z .5
+
+python autograder.py -q q8
+
 
 
 ## Happy Coding...

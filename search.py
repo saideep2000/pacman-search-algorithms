@@ -87,17 +87,89 @@ def depthFirstSearch(problem: SearchProblem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    stack = util.Stack()
+    stack.push((problem.getStartState(), []))
+
+    explored = set()
+
+    while not stack.isEmpty():
+        currentState, actions = stack.pop()
+
+        # If this currentState is Goal state return its actions.
+        if problem.isGoalState(currentState):
+            return actions
+
+        # Marking the state as explored
+        explored.add(currentState)
+
+        # Get the successors of the current state
+        for nextState, action, _ in problem.getSuccessors(currentState):
+            if nextState not in explored:
+                # Append the action to reach the next state to the current actions list
+                newActions = actions + [action]
+                stack.push((nextState, newActions))
+
+        # If the goal state isn't reached, return an empty list
+    return []
 
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    queue = util.Queue()
+    queue.push((problem.getStartState(), []))
+
+    explored = set()
+    explored.add(problem.getStartState())
+
+    while not queue.isEmpty():
+        currentState, actions = queue.pop()
+
+
+        # If this currentState is Goal state return its actions.
+        if problem.isGoalState(currentState):
+            return actions
+
+        # Get the successors of the current state
+        for nextState, action, _ in problem.getSuccessors(currentState):
+            if nextState not in explored:
+                # Append the action to reach the next state to the current actions list
+                newActions = actions + [action]
+                queue.push((nextState, newActions))
+                explored.add(nextState)
+
+        # If the goal state isn't reached, return an empty list
+    return []
+
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    priorityqueue = util.PriorityQueue()
+
+    # Initialize the queue with start state and cost 0
+    priorityqueue.push((problem.getStartState(), []), 0)
+
+    # This is meant to take unique elements like graph
+    explored = set()
+
+    while not priorityqueue.isEmpty():
+        currentState, actions = priorityqueue.pop()
+
+        # If this currentState is Goal state return its actions.
+        if problem.isGoalState(currentState):
+            return actions
+
+        if currentState not in explored:
+            explored.add(currentState)
+            for nextState, action, cost in problem.getSuccessors(currentState):
+                if nextState not in explored:
+                    newActions = actions + [action]
+                    # Calculate the total cost for newActions
+                    totalCost = problem.getCostOfActions(newActions)
+                    priorityqueue.push((nextState, newActions), totalCost)
+
+    return []
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -108,10 +180,31 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    priorityqueue = util.PriorityQueue()
 
+    # Start state with cost as heuristic value only because actual cost to start is 0
+    startState = problem.getStartState()
+    priorityqueue.push((startState, []), heuristic(startState, problem))
 
+    explored = set()
+
+    while not priorityqueue.isEmpty():
+        currentState, actions = priorityqueue.pop()
+
+        # If this currentState is Goal state return its actions.
+        if problem.isGoalState(currentState):
+            return actions
+
+        if currentState not in explored:
+            explored.add(currentState)
+            for nextState, action, cost in problem.getSuccessors(currentState):
+                if nextState not in explored:
+                    newActions = actions + [action]
+                    # Calculate the total cost for newActions which is actual cost + heuristic
+                    totalCost = problem.getCostOfActions(newActions) + heuristic(nextState, problem)
+                    priorityqueue.push((nextState, newActions), totalCost)
+
+    return []
 # Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
