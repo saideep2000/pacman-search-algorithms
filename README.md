@@ -125,7 +125,7 @@ python3 pacman.py -l tinyCorners -p SearchAgent -a fn=bfs,prob=CornersProblem
 python3 pacman.py -l mediumCorners -p SearchAgent -a fn=bfs,prob=CornersProblem
 
 python3 autograder.py -q q5
-
+    
 ###### Q6 (Corners Problem Heuristic):
 
 python3 pacman.py -l mediumCorners -p AStarCornersAgent -z 0.5
