@@ -136,20 +136,20 @@ python3 autograder.py -q q6
 
 ###### Q7 (Eating all the dots):
 
-python pacman.py -l testSearch -p AStarFoodSearchAgent
+python3 pacman.py -l testSearch -p AStarFoodSearchAgent
 
 -p SearchAgent -a fn=astar,prob=FoodSearchProblem,heuristic=foodHeuristic
 
-python pacman.py -l trickySearch -p AStarFoodSearchAgent
+python3 pacman.py -l trickySearch -p AStarFoodSearchAgent
 
-python autograder.py -q q7
+python3 autograder.py -q q7
 
 
 ###### Q8 (Suboptimal Search):
 
-python pacman.py -l bigSearch -p ClosestDotSearchAgent -z .5
+python3 pacman.py -l bigSearch -p ClosestDotSearchAgent -z .5
 
-python autograder.py -q q8
+python3 autograder.py -q q8
 
 
 
