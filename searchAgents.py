@@ -320,36 +320,29 @@ class CornersProblem(search.SearchProblem):
             state, 'action' is the action required to get there, and 'stepCost'
             is the incremental cost of expanding to that successor
         """
-        currentPosition, visitedCorners = state
+        currPosition, visitedPlaces = state
         successors = []
-        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            # Add a successor state to the successor list if the action is legal
-            # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
 
-            "*** YOUR CODE HERE ***"
-            x, y = currentPosition
+        for movement in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+            xPos, yPos = currPosition
 
-            # Calculate the next position based on the action
-            dx, dy = Actions.directionToVector(action)
-            nextx, nexty = int(x + dx), int(y + dy)
+            # Compute the next position based on the movement
+            delta_x, delta_y = Actions.directionToVector(movement)
+            newX, newY = int(xPos + delta_x), int(yPos + delta_y)
 
-            if not self.walls[nextx][nexty]:  # Check if the new position is valid (i.e., not a wall)
-                nextPosition = (nextx, nexty)
+            if not self.walls[newX][newY]:  # Verify if the new position is valid (i.e., not a wall)
+                newPosition = (newX, newY)
 
-                # Update visited corners if next position is a corner and hasn't been visited yet
-                if nextPosition in self.corners and nextPosition not in visitedCorners:
-                    nextVisitedCorners = visitedCorners.union({nextPosition})
+                # Update visited places if newPosition is a corner and hasn't been visited yet
+                if newPosition in self.corners and newPosition not in visitedPlaces:
+                    updatedVisitedPlaces = visitedPlaces.union({newPosition})
                 else:
-                    nextVisitedCorners = visitedCorners
+                    updatedVisitedPlaces = visitedPlaces
 
-                successor = ((nextPosition, nextVisitedCorners), action, 1)
-                successors.append(successor)
+                nextMove = ((newPosition, updatedVisitedPlaces), movement, 1)
+                successors.append(nextMove)
 
-        self._expanded += 1 # DO NOT CHANGE
+        self._expanded += 1  # DO NOT CHANGE
         return successors
 
     def getCostOfActions(self, actions):
@@ -383,27 +376,29 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    currentPosition, visitedCorners = state
-    unvisitedCorners = [corner for corner in corners if corner not in visitedCorners]
+
+    currLocation, visitedPoints = state
+    pointsToVisit = [point for point in corners if point not in visitedPoints]
 
     # If all corners are visited, return 0
-    if not unvisitedCorners:
+    if not pointsToVisit:
         return 0
 
-    totalDistance = 0
-    while unvisitedCorners:
-        # Find the closest unvisited corner based on Manhattan distance
-        distances = [util.manhattanDistance(currentPosition, corner) for corner in unvisitedCorners]
-        closestCorner = unvisitedCorners[distances.index(min(distances))]
+    cumulativeDistance = 0
+    while pointsToVisit:
+        # Find the nearest unvisited corner based on Manhattan distance
+        distancesToCorners = [util.manhattanDistance(currLocation, point) for point in pointsToVisit]
+        nearestPoint = pointsToVisit[distancesToCorners.index(min(distancesToCorners))]
 
-        # Add the distance to the total
-        totalDistance += min(distances)
+        # Add the distance to the cumulative total
+        cumulativeDistance += min(distancesToCorners)
 
-        # Set the current position to the closest corner and remove it from unvisited corners
-        currentPosition = closestCorner
-        unvisitedCorners.remove(closestCorner)
+        # Update the currLocation to the nearestPoint and remove it from pointsToVisit
+        currLocation = nearestPoint
+        pointsToVisit.remove(nearestPoint)
 
-    return totalDistance
+    return cumulativeDistance
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -495,70 +490,59 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
-    # position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    # # Get the list of food coordinates
-    # foodList = foodGrid.asList()
-    #
-    # # If there's no food left, return 0
-    # if not foodList:
-    #     return 0
-    #
-    # # Compute the Manhattan distance to each food pellet
-    # distances = [abs(position[0] - food[0]) + abs(position[1] - food[1]) for food in foodList]
-    #
-    # # Return the maximum distance as the heuristic
-    # return max(distances)
-    position, foodGrid = state
-    foodList = foodGrid.asList()
 
-    if not foodList:  # No food left
+    pacmanPos, foodLayout = state
+    foodLocations = foodLayout.asList()
+
+    if not foodLocations:  # No food left
         return 0
 
     # Create edges between all food pairs with their manhattan distance as weight
-    edges = []
-    for (food1, food2) in combinations(foodList, 2):
-        edges.append((food1, food2, util.manhattanDistance(food1, food2)))
+    foodPairs = []
+    for (foodA, foodB) in combinations(foodLocations, 2):
+        foodPairs.append((foodA, foodB, util.manhattanDistance(foodA, foodB)))
 
     # Sort edges by weight
-    edges.sort(key=lambda x: x[2])
+    foodPairs.sort(key=lambda x: x[2])
 
     # Helper function for union-find algorithm
-    def find(parent, i):
-        if parent[i] == i:
-            return i
-        return find(parent, parent[i])
+    def find(leader, item):
+        if leader[item] == item:
+            return item
+        return find(leader, leader[item])
 
     # Helper function for union of two sets of a node
-    def union(parent, rank, x, y):
-        rootX = find(parent, x)
-        rootY = find(parent, y)
-        if rank[rootX] < rank[rootY]:
-            parent[rootX] = rootY
-        elif rank[rootX] > rank[rootY]:
-            parent[rootY] = rootX
+    def union(leader, hierarchy, x, y):
+        rootX = find(leader, x)
+        rootY = find(leader, y)
+        if hierarchy[rootX] < hierarchy[rootY]:
+            leader[rootX] = rootY
+        elif hierarchy[rootX] > hierarchy[rootY]:
+            leader[rootY] = rootX
         else:
-            parent[rootY] = rootX
-            rank[rootX] += 1
+            leader[rootY] = rootX
+            hierarchy[rootX] += 1
 
     # Kruskal's algorithm to compute MST
-    mst_weight = 0
-    parent = {}
-    rank = {}
-    for food in foodList:
-        parent[food] = food
-        rank[food] = 0
-    while edges:
-        food1, food2, weight = edges.pop(0)
-        root1 = find(parent, food1)
-        root2 = find(parent, food2)
-        if root1 != root2:
-            mst_weight += weight
-            union(parent, rank, root1, root2)
+    mstValue = 0
+    leader = {}
+    hierarchy = {}
+    for food in foodLocations:
+        leader[food] = food
+        hierarchy[food] = 0
+    while foodPairs:
+        foodA, foodB, distance = foodPairs.pop(0)
+        mainFoodA = find(leader, foodA)
+        mainFoodB = find(leader, foodB)
+        if mainFoodA != mainFoodB:
+            mstValue += distance
+            union(leader, hierarchy, mainFoodA, mainFoodB)
 
     # Add distance from Pacman to the nearest food pellet
-    closest_food_dist = min(util.manhattanDistance(position, food) for food in foodList)
-    return mst_weight + closest_food_dist
+    nearestFoodDist = min(util.manhattanDistance(pacmanPos, food) for food in foodLocations)
+    return mstValue + nearestFoodDist
+
 
 
 class ClosestDotSearchAgent(SearchAgent):
@@ -583,14 +567,11 @@ class ClosestDotSearchAgent(SearchAgent):
         Returns a path (a list of actions) to the closest dot, starting from
         gameState.
         """
-        # Here are some useful elements of the startState
-        startPosition = gameState.getPacmanPosition()
-        food = gameState.getFood()
-        walls = gameState.getWalls()
-        problem = AnyFoodSearchProblem(gameState)
-
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # We use the AnyFoodSearchProblem to find the path to the closest dot
+        problem = AnyFoodSearchProblem(gameState)
+        # Using BFS to get the path
+        return search.breadthFirstSearch(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -626,7 +607,9 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        if self.food[x][y]:
+            return True
+        return False
 
 def mazeDistance(point1: Tuple[int, int], point2: Tuple[int, int], gameState: pacman.GameState) -> int:
     """

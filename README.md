@@ -14,11 +14,43 @@ In the project, we have:
 
 ### `Features`
 
-1. We will take todos with the text input and a button to get it registered.\
-2. When ever the task is done we can click on the radio button as completed.
-3. There is a button to remove the todo which are done.
-4. There is a live count which tells us the todo left to be completed.
-5. Our website will keep track of all the todos we registered, we will can reload to check wheather it's storing in the local_storage or not.
+1. Depth First Search (DFS):
+
+Implement the DFS algorithm to find a path through Pacman's maze.
+It needs to return a list of actions leading from the start to the goal.
+Should not move through walls or perform illegal moves.
+
+2. Breadth First Search (BFS):
+
+Implement BFS to find the shortest path in Pacman's world.
+It should not expand states that have been previously visited.
+
+3. Uniform-Cost Search:
+
+Adjust the cost function to get Pacman to follow different paths. The goal is to find the least-cost solution.
+Charge differently for different paths such as those with ghosts or food-rich areas.
+
+4. A Search*:
+
+Implement the A* algorithm which uses a heuristic function to help guide the search.
+The Manhattan distance heuristic is provided, but you might need to use other heuristics or implement your own.
+
+5. Finding All the Corners:
+
+Develop an algorithm where Pacman needs to touch all four corners of the maze.
+Implement the CornersProblem search problem to handle this situation.
+Make sure to use an abstract state representation that is efficient.
+
+6. Corners Problem: Heuristic:
+
+Implement a consistent heuristic for the CornersProblem to optimize the A* search.
+The heuristic must be non-trivial and consistent to get full credit.
+
+7. Eating All The Dots:
+
+Solve the problem of Pacman eating all the food in the least number of steps.
+This uses the FoodSearchProblem.
+Implement a consistent heuristic for this problem to make A* search more efficient.
 
 **Note: This is just a code uploaded for reference and as a `practice`, towards AI!**
 
@@ -150,6 +182,11 @@ python3 autograder.py -q q7
 python3 pacman.py -l bigSearch -p ClosestDotSearchAgent -z .5
 
 python3 autograder.py -q q8
+
+
+###### Token generated:
+
+python submission_autograder.py
 
 
 

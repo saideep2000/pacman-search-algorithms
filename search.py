@@ -87,88 +87,89 @@ def depthFirstSearch(problem: SearchProblem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    stack = util.Stack()
-    stack.push((problem.getStartState(), []))
+    nodeStack = util.Stack()
+    nodeStack.push((problem.getStartState(), []))
 
-    explored = set()
+    visitedStates = set()
 
-    while not stack.isEmpty():
-        currentState, actions = stack.pop()
+    while not nodeStack.isEmpty():
+        currState, pathToState = nodeStack.pop()
 
-        # If this currentState is Goal state return its actions.
-        if problem.isGoalState(currentState):
-            return actions
+        # If this currState is Goal state return its actions.
+        if problem.isGoalState(currState):
+            return pathToState
 
-        # Marking the state as explored
-        explored.add(currentState)
+        # Marking the state as visited
+        visitedStates.add(currState)
 
         # Get the successors of the current state
-        for nextState, action, _ in problem.getSuccessors(currentState):
-            if nextState not in explored:
-                # Append the action to reach the next state to the current actions list
-                newActions = actions + [action]
-                stack.push((nextState, newActions))
+        for adjacentState, move, _ in problem.getSuccessors(currState):
+            if adjacentState not in visitedStates:
+                # Append the move to reach the adjacent state to the current path list
+                newPath = pathToState + [move]
+                nodeStack.push((adjacentState, newPath))
 
-        # If the goal state isn't reached, return an empty list
+    # If the goal state isn't reached, return an empty list
     return []
+
 
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    queue = util.Queue()
-    queue.push((problem.getStartState(), []))
+    stateQueue = util.Queue()
+    stateQueue.push((problem.getStartState(), []))
 
-    explored = set()
-    explored.add(problem.getStartState())
+    visitedStates = set()
+    visitedStates.add(problem.getStartState())
 
-    while not queue.isEmpty():
-        currentState, actions = queue.pop()
+    while not stateQueue.isEmpty():
+        currState, pathToState = stateQueue.pop()
 
-
-        # If this currentState is Goal state return its actions.
-        if problem.isGoalState(currentState):
-            return actions
+        # If this currState is Goal state, return its actions.
+        if problem.isGoalState(currState):
+            return pathToState
 
         # Get the successors of the current state
-        for nextState, action, _ in problem.getSuccessors(currentState):
-            if nextState not in explored:
-                # Append the action to reach the next state to the current actions list
-                newActions = actions + [action]
-                queue.push((nextState, newActions))
-                explored.add(nextState)
+        for adjacentState, move, _ in problem.getSuccessors(currState):
+            if adjacentState not in visitedStates:
+                # Append the move to reach the adjacent state to the current path list
+                newPath = pathToState + [move]
+                stateQueue.push((adjacentState, newPath))
+                visitedStates.add(adjacentState)
 
-        # If the goal state isn't reached, return an empty list
+    # If the goal state isn't reached, return an empty list
     return []
+
 
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    priorityqueue = util.PriorityQueue()
+    costQueue = util.PriorityQueue()
 
-    # Initialize the queue with start state and cost 0
-    priorityqueue.push((problem.getStartState(), []), 0)
+    # Initialize the queue with the start state and cost 0
+    costQueue.push((problem.getStartState(), []), 0)
 
-    # This is meant to take unique elements like graph
-    explored = set()
+    visitedStates = set()
 
-    while not priorityqueue.isEmpty():
-        currentState, actions = priorityqueue.pop()
+    while not costQueue.isEmpty():
+        currState, pathToState = costQueue.pop()
 
-        # If this currentState is Goal state return its actions.
-        if problem.isGoalState(currentState):
-            return actions
+        # If this currState is the Goal state, return its actions.
+        if problem.isGoalState(currState):
+            return pathToState
 
-        if currentState not in explored:
-            explored.add(currentState)
-            for nextState, action, cost in problem.getSuccessors(currentState):
-                if nextState not in explored:
-                    newActions = actions + [action]
-                    # Calculate the total cost for newActions
-                    totalCost = problem.getCostOfActions(newActions)
-                    priorityqueue.push((nextState, newActions), totalCost)
+        if currState not in visitedStates:
+            visitedStates.add(currState)
+            for adjacentState, move, stepCost in problem.getSuccessors(currState):
+                if adjacentState not in visitedStates:
+                    newPath = pathToState + [move]
+                    # Calculate the total cost for newPath
+                    cumulativeCost = problem.getCostOfActions(newPath)
+                    costQueue.push((adjacentState, newPath), cumulativeCost)
 
     return []
+
 
 
 def nullHeuristic(state, problem=None):
@@ -180,31 +181,32 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    priorityqueue = util.PriorityQueue()
+    costQueue = util.PriorityQueue()
 
     # Start state with cost as heuristic value only because actual cost to start is 0
-    startState = problem.getStartState()
-    priorityqueue.push((startState, []), heuristic(startState, problem))
+    initialState = problem.getStartState()
+    costQueue.push((initialState, []), heuristic(initialState, problem))
 
-    explored = set()
+    visitedNodes = set()
 
-    while not priorityqueue.isEmpty():
-        currentState, actions = priorityqueue.pop()
+    while not costQueue.isEmpty():
+        currNode, pathToNode = costQueue.pop()
 
-        # If this currentState is Goal state return its actions.
-        if problem.isGoalState(currentState):
-            return actions
+        # If this currNode is the Goal state, return its actions.
+        if problem.isGoalState(currNode):
+            return pathToNode
 
-        if currentState not in explored:
-            explored.add(currentState)
-            for nextState, action, cost in problem.getSuccessors(currentState):
-                if nextState not in explored:
-                    newActions = actions + [action]
-                    # Calculate the total cost for newActions which is actual cost + heuristic
-                    totalCost = problem.getCostOfActions(newActions) + heuristic(nextState, problem)
-                    priorityqueue.push((nextState, newActions), totalCost)
+        if currNode not in visitedNodes:
+            visitedNodes.add(currNode)
+            for adjacentNode, move, stepCost in problem.getSuccessors(currNode):
+                if adjacentNode not in visitedNodes:
+                    newPath = pathToNode + [move]
+                    # Calculate the total cost for newPath which is actual cost + heuristic
+                    combinedCost = problem.getCostOfActions(newPath) + heuristic(adjacentNode, problem)
+                    costQueue.push((adjacentNode, newPath), combinedCost)
 
     return []
+
 # Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
